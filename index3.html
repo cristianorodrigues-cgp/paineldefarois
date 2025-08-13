@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Faróis Escolares</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        .card {
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            background-color: rgba(255, 255, 255, 0.75);
+            border-radius: 12px;
+            border: 1px solid rgba(209, 213, 219, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-field {
+            transition: all 0.3s;
+        }
+
+        .input-field:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+        }
+
+        .footer-wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+        }
+
+        .footer-wave svg {
+            position: relative;
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 100px;
+        }
+
+        .footer-wave .shape-fill {
+            fill: #4F46E5;
+        }
+
+        .traffic-light {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .green {
+            background-color: #10B981;
+        }
+
+        .yellow {
+            background-color: #F59E0B;
+        }
+
+        .red {
+            background-color: #EF4444;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #e546a0, #b0b910);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .editable {
+            cursor: default; /* No pointer for non-editable */
+            position: relative;
+        }
+
+        .class-input {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 2px 4px;
+            text-align: center;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-bottom: 3px solid white;
+        }
+
+        .class-card {
+            transition: all 0.3s ease;
+        }
+
+        .class-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .class-rank-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .rank-1 {
+            background-color: #FFD700;
+        }
+
+        .rank-2 {
+            background-color: #C0C0C0;
+        }
+
+        .rank-3 {
+            background-color: #CD7F32;
+        }
+
+        .rank-4-5 {
+            background-color: #4F46E5;
+        }
+
+        .class-performance-bar {
+            height: 10px;
+            border-radius: 5px;
+            background-color: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .class-performance-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .performance-green {
+            background-color: #10B981;
+        }
+
+        .performance-yellow {
+            background-color: #F59E0B;
+        }
+
+        .performance-red {
+            background-color: #EF4444;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <header class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h1 class="text-3xl font-bold">E.E. JARDIM DAS ROSAS <span id="school-name" class="gradient-text">Excelência Educacional</span></h1>
+                    <p class="text-indigo-100">Painel de Desempenho Escolar - BI</p>
+                    <div class="flex items-center text-indigo-100 mt-2">
+                        <i class="fas fa-calendar-alt mr-2"></i>
+                        Semana: <span id="week-number" class="font-semibold ml-1"></span>
+                        <span class="mx-2">/</span>
+                        Ano: <span id="year" class="font-semibold ml-1"></span>
+                    </div>
+                </div>
+                <div class="flex items-center bg-white/20 rounded-full px-6 py-2 login-status">
+                    <i class="fas fa-user-shield mr-2"></i>
+                    <span id="login-status-text" class="font-semibold">Modo Leitura</span>
+                    <span id="user-id-display" class="ml-2 text-sm text-indigo-100 hidden"></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="bg-white/90 shadow-sm">
+        <div class="container mx-auto px-4">
+            <div class="flex space-x-1">
+                <button id="dashboard-tab" class="tab-button active px-6 py-3 text-indigo-800 font-medium rounded-t-lg">
+                    <i class="fas fa-chart-line mr-2"></i>Visão Geral
+                </button>
+                <button id="classes-tab" class="tab-button px-6 py-3 text-indigo-800 font-medium rounded-t-lg">
+                    <i class="fas fa-users mr-2"></i>Turmas (35)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <!-- Dashboard Tab Content -->
+        <div id="dashboard-content" class="tab-content active">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="traffic-light" id="elefante-light"></div>
+                        <h3 class="text-xl font-semibold text-gray-800">Os ajustes vão de 0% zero a 100% !</h3>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="number" min="0" max="100" id="elefante-input" class="input-field w-24 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none" readonly>
+                        <span class="px-4 py-2 bg-gray-100 text-gray-700 rounded-r-lg">%</span>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">0% a 60% Vermelho,  61% a 84% Amarelo & 85% para cima Verde.</p>
+                </div>
+
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="traffic-light" id="tarefasp-light"></div>
+                        <h3 class="text-xl font-semibold text-gray-800">TarefaSP</h3>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="number" min="0" max="100" id="tarefasp-input" class="input-field w-24 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none" readonly>
+                        <span class="px-4 py-2 bg-gray-100 text-gray-700 rounded-r-lg">%</span>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">Desempenho nas tarefas escolares</p>
+                </div>
+
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="traffic-light" id="redacao-light"></div>
+                        <h3 class="text-xl font-semibold text-gray-800">Redação</h3>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="number" min="0" max="100" id="redacao-input" class="input-field w-24 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none" readonly>
+                        <span class="px-4 py-2 bg-gray-100 text-gray-700 rounded-r-lg">%</span>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">Desempenho em produção textual</p>
+                </div>
+
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="traffic-light" id="leia-light"></div>
+                        <h3 class="text-xl font-semibold text-gray-800">Leia SP</h3>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="number" min="0" max="100" id="leia-input" class="input-field w-24 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none" readonly>
+                        <span class="px-4 py-2 bg-gray-100 text-gray-700 rounded-r-lg">%</span>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">Frequência e compreensão de leitura</p>
+                </div>
+
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="traffic-light" id="speak-light"></div>
+                        <h3 class="text-xl font-semibold text-gray-800">SPeak</h3>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="number" min="0" max="100" id="speak-input" class="input-field w-24 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none" readonly>
+                        <span class="px-4 py-2 bg-gray-100 text-gray-700 rounded-r-lg">%</span>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">Habilidades de comunicação em inglês</p>
+                </div>
+
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="traffic-light" id="alura-light"></div>
+                        <h3 class="text-xl font-semibold text-gray-800">Alura</h3>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="number" min="0" max="100" id="alura-input" class="input-field w-24 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none" readonly>
+                        <span class="px-4 py-2 bg-gray-100 text-gray-700 rounded-r-lg">%</span>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">Desempenho em programação e tecnologia</p>
+                </div>
+
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="traffic-light" id="matific-light"></div>
+                        <h3 class="text-xl font-semibold text-gray-800">Matific</h3>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="number" min="0" max="100" id="matific-input" class="input-field w-24 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none" readonly>
+                        <span class="px-4 py-2 bg-gray-100 text-gray-700 rounded-r-lg">%</span>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">Habilidades matemáticas e lógicas</p>
+                </div>
+
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="traffic-light" id="khan-light"></div>
+                        <h3 class="text-xl font-semibold text-gray-800">Khan</h3>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="number" min="0" max="100" id="khan-input" class="input-field w-24 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none" readonly>
+                        <span class="px-4 py-2 bg-gray-100 text-gray-700 rounded-r-lg">%</span>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">Desempenho em diversas disciplinas</p>
+                </div>
+
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="traffic-light" id="nota-light"></div>
+                        <h3 class="text-xl font-semibold text-gray-800">Aluno Presente</h3>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="number" min="0" max="100" id="nota-input" class="input-field w-24 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none" readonly>
+                        <span class="px-4 py-2 bg-gray-100 text-gray-700 rounded-r-lg">%</span>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">Percentual de alunos presentes</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
+                    <h2 class="text-xl font-bold text-white">Top 5 Turmas da Escola</h2>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div class="bg-indigo-50 rounded-lg p-4 text-center">
+                            <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <span class="text-indigo-600 text-2xl font-bold">1°</span>
+                            </div>
+                            <h3 class="font-semibold text-indigo-800">
+                                <input type="text" value="9º Ano A" class="class-input" id="class-1-name" readonly>
+                            </h3>
+                            <p class="text-sm text-indigo-600">
+                                Alunos presentes: <input type="number" value="87" min="0" max="100" class="class-input" id="class-1-value" readonly>%
+                            </p>
+                        </div>
+                        <div class="bg-purple-50 rounded-lg p-4 text-center">
+                            <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <span class="text-purple-600 text-2xl font-bold">2º</span>
+                            </div>
+                            <h3 class="font-semibold text-purple-800">
+                                <input type="text" value="8º Ano B" class="class-input" id="class-2-name" readonly>
+                            </h3>
+                            <p class="text-sm text-purple-600">
+                                Alunos presentes: <input type="number" value="85" min="0" max="100" class="class-input" id="class-2-value" readonly>%
+                            </p>
+                        </div>
+                        <div class="bg-blue-50 rounded-lg p-4 text-center">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <span class="text-blue-600 text-2xl font-bold">3º</span>
+                            </div>
+                            <h3 class="font-semibold text-blue-800">
+                                <input type="text" value="7º Ano A" class="class-input" id="class-3-name" readonly>
+                            </h3>
+                            <p class="text-sm text-blue-600">
+                                Alunos presentes: <input type="number" value="82" min="0" max="100" class="class-input" id="class-3-value" readonly>%
+                            </p>
+                        </div>
+                        <div class="bg-green-50 rounded-lg p-4 text-center">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <span class="text-green-600 text-2xl font-bold">4º</span>
+                            </div>
+                            <h3 class="font-semibold text-green-800">
+                                <input type="text" value="6º Ano C" class="class-input" id="class-4-name" readonly>
+                            </h3>
+                            <p class="text-sm text-green-600">
+                                Alunos presentes: <input type="number" value="80" min="0" max="100" class="class-input" id="class-4-value" readonly>%
+                            </p>
+                        </div>
+                        <div class="bg-yellow-50 rounded-lg p-4 text-center">
+                            <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <span class="text-yellow-600 text-2xl font-bold">5º</span>
+                            </div>
+                            <h3 class="font-semibold text-yellow-800">
+                                <input type="text" value="9º Ano C" class="class-input" id="class-5-name" readonly>
+                            </h3>
+                            <p class="text-sm text-yellow-600">
+                                Alunos presentes: <input type="number" value="78" min="0" max="100" class="class-input" id="class-5-value" readonly>%
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Classes Tab Content -->
+        <div id="classes-content" class="tab-content">
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                        <h2 class="text-xl font-bold text-white">Performance das Turmas</h2>
+                        <div class="mt-2 md:mt-0 relative">
+                            <input type="text" id="class-search" placeholder="Pesquisar turma..." 
+                                   class="pl-10 pr-4 py-2 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4" id="classes-container">
+                        <!-- Classes will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
+                    <h2 class="text-xl font-bold text-white">Ranking das Turmas</h2>
+                </div>
+                <div class="p-6">
+                    <div class="overflow-x-auto" style="max-height: 600px; overflow-y: auto;">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posição</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Turma</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Desempenho</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Faróis</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="ranking-table-body" style="max-height: 500px; overflow-y: auto; display: block;">
+                                <!-- Ranking will be dynamically inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white relative">
+        <div class="footer-wave">
+            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path>
+            </svg>
+        </div>
+        <div class="container mx-auto px-4 py-8 relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h3 class="text-xl font-bold">Painel de Faróis Escolares</h3>
+                    <p class="text-indigo-200">Acompanhamento de desempenho educacional</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-8 text-center text-indigo-200 text-sm">
+                <p>Desenvolvido com <i class="fas fa-heart text-red-300"></i> pela Equipe de Tecnologia Educacional NPC - DE CAIEIRAS 2025</p>
+                <p class="mt-1">© 2025 Escola <span id="footer-school-name">Excelência Educacional</span>. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // COLOQUE A URL DO SEU GOOGLE APPS SCRIPT AQUI
+        // Exemplo: const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfyc.../exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCXALRfxRkJzItCGHQl2TCfbPDm2ZDjTkCGJDT1-A47vLX0c-C_Ub0jqTDaas1SQXp/exec';
+                  
+        // Default dashboard data (fallback if API fails)
+        const defaultDashboardData = {
+            schoolName: 'Excelência Educacional',
+            weekNumber: 1,
+            year: new Date().getFullYear(),
+            indicators: {
+                'elefante-input': 70,
+                'tarefasp-input': 75,
+                'redacao-input': 80,
+                'leia-input': 65,
+                'speak-input': 60,
+                'alura-input': 85,
+                'matific-input': 78,
+                'khan-input': 72,
+                'nota-input': 90
+            },
+            classes: [
+                { name: '9º Ano A', value: 87 },
+                { name: '8º Ano B', value: 85 },
+                { name: '7º Ano A', value: 82 },
+                { name: '6º Ano C', value: 80 },
+                { name: '9º Ano C', value: 78 },
+                { name: '8º Ano A', value: 77 },
+                { name: '7º Ano B', value: 76 },
+                { name: '6º Ano B', value: 75 },
+                { name: '5º Ano A', value: 74 },
+                { name: '5º Ano B', value: 73 },
+                { name: '4º Ano A', value: 72 },
+                { name: '4º Ano B', value: 71 },
+                { name: '3º Ano A', value: 70 },
+                { name: '3º Ano B', value: 69 },
+                { name: '2º Ano A', value: 68 },
+                { name: '2º Ano B', value: 67 },
+                { name: '1º Ano A', value: 66 },
+                { name: '1º Ano B', value: 65 },
+                { name: '9º Ano D', value: 64 },
+                { name: '8º Ano C', value: 63 },
+                { name: '7º Ano C', value: 62 },
+                { name: '6º Ano D', value: 61 },
+                { name: '5º Ano C', value: 60 },
+                { name: '4º Ano C', value: 59 },
+                { name: '3º Ano C', value: 58 },
+                { name: '2º Ano C', value: 57 },
+                { name: '1º Ano C', value: 56 },
+                { name: '9º Ano E', value: 55 },
+                { name: '8º Ano D', value: 54 },
+                { name: '7º Ano D', value: 53 },
+                { name: '6º Ano E', value: 52 },
+                { name: '5º Ano D', value: 51 },
+                { name: '4º Ano D', value: 50 },
+                { name: '3º Ano D', value: 49 },
+                { name: '2º Ano D', value: 48 },
+                { name: '1º Ano D', value: 47 }
+            ]
+        };
+
+        // Load data from Apps Script
+        async function loadDashboardData() {
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=getDashboardData`, {
+                    method: 'GET'
+                });
+
+                console.log('Load Data Response Status:', response.status, response.statusText);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Load Data Response Body (Error):', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success && result.dashboardData) {
+                    const data = result.dashboardData;
+                                        
+                    // Update school name
+                    document.getElementById('school-name').textContent = data.schoolName;
+                    document.getElementById('footer-school-name').textContent = data.schoolName;
+
+                    // Update week and year
+                    document.getElementById('week-number').textContent = data.weekNumber;
+                    document.getElementById('year').textContent = data.year;
+
+                    // Update indicators
+                    for (const indicatorId in data.indicators) {
+                        const inputElement = document.getElementById(indicatorId);
+                        if (inputElement) {
+                            inputElement.value = data.indicators[indicatorId];
+                            inputElement.dispatchEvent(new Event('input')); // Trigger 'input' to update traffic light
+                        }
+                    }
+
+                    // Update classes
+                    data.classes.forEach((classData, index) => {
+                        const classNameInput = document.getElementById(`class-${index + 1}-name`);
+                        const classValueInput = document.getElementById(`class-${index + 1}-value`);
+                        if (classNameInput) classNameInput.value = classData.name;
+                        if (classValueInput) classValueInput.value = classData.value;
+                    });
+
+                    // Update classes tab
+                    renderClassesTab(data.classes);
+
+                } else {
+                    console.warn("No data found or error loading from Apps Script:", result.message);
+                    loadDefaultData(); // Load default data if Apps Script fails
+                }
+            } catch (error) {
+                console.error("Error loading data from Apps Script:", error);
+                loadDefaultData(); // Load default data in case of network error
+            }
+        }
+
+        // Load default data if Apps Script fails or is empty
+        function loadDefaultData() {
+            document.getElementById('school-name').textContent = defaultDashboardData.schoolName;
+            document.getElementById('footer-school-name').textContent = defaultDashboardData.schoolName;
+            document.getElementById('week-number').textContent = getCurrentWeek();
+            document.getElementById('year').textContent = new Date().getFullYear();
+
+            for (const indicatorId in defaultDashboardData.indicators) {
+                const inputElement = document.getElementById(indicatorId);
+                if (inputElement) {
+                    inputElement.value = defaultDashboardData.indicators[indicatorId];
+                    inputElement.dispatchEvent(new Event('input')); // Update traffic light
+                }
+            }
+
+            defaultDashboardData.classes.forEach((classData, index) => {
+                const classNameInput = document.getElementById(`class-${index + 1}-name`);
+                const classValueInput = document.getElementById(`class-${index + 1}-value`);
+                if (classNameInput) classNameInput.value = classData.name;
+                if (classValueInput) classValueInput.value = classData.value;
+            });
+
+            // Update classes tab with default data
+            renderClassesTab(defaultDashboardData.classes);
+        }
+
+        // Search classes function
+        function searchClasses() {
+            const searchTerm = document.getElementById('class-search').value.toLowerCase();
+            const classCards = document.querySelectorAll('.class-card');
+            const tableRows = document.querySelectorAll('#ranking-table-body tr');
+            
+            classCards.forEach(card => {
+                const className = card.querySelector('h3').textContent.toLowerCase();
+                card.style.display = className.includes(searchTerm) ? 'block' : 'none';
+            });
+            
+            tableRows.forEach(row => {
+                const className = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                row.style.display = className.includes(searchTerm) ? 'table-row' : 'none';
+            });
+        }
+
+        // Render classes tab with all classes
+        function renderClassesTab(classes) {
+            // Add search event listener
+            document.getElementById('class-search').addEventListener('input', searchClasses);
+            const classesContainer = document.getElementById('classes-container');
+            const rankingTableBody = document.getElementById('ranking-table-body');
+            
+            // Clear previous content
+            classesContainer.innerHTML = '';
+            rankingTableBody.innerHTML = '';
+            
+            // Sort classes by performance (highest first)
+            const sortedClasses = [...classes].sort((a, b) => b.value - a.value);
+            
+            // Render class cards for all 35 classes
+            sortedClasses.forEach((classData, index) => {
+                const rank = index + 1;
+                const performanceColor = getPerformanceColor(classData.value);
+                
+                // Create class card
+                const classCard = document.createElement('div');
+                classCard.className = 'class-card bg-white rounded-lg shadow p-4';
+                classCard.innerHTML = `
+                    <div class="flex items-start justify-between mb-2">
+                        <h3 class="font-semibold text-lg text-gray-800">${classData.name}</h3>
+                        <span class="class-rank-badge ${rank <= 3 ? `rank-${rank}` : 'rank-4-5'}">${rank}º</span>
+                    </div>
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm text-gray-600">Desempenho:</span>
+                        <span class="font-semibold ${performanceColor.text}">${classData.value}%</span>
+                    </div>
+                    <div class="class-performance-bar">
+                        <div class="class-performance-fill ${performanceColor.bg}" style="width: ${classData.value}%"></div>
+                    </div>
+                    <div class="mt-3 grid grid-cols-3 gap-2">
+                       
+                    </div>
+                `;
+                classesContainer.appendChild(classCard);
+                
+                // Add to ranking table for all 35 classes
+                if (index < 35) {
+                    const row = document.createElement('tr');
+                    row.className = index % 2 === 0 ? 'bg-gray-50' : 'bg-white';
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            ${rank <= 3 ? `<span class="class-rank-badge rank-${rank}">${rank}º</span>` : `<span class="class-rank-badge rank-4-5">${rank}º</span>`}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-semibold">
+                            ${classData.name}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-32 mr-2">
+                                    <div class="class-performance-bar">
+                                        <div class="class-performance-fill ${performanceColor.bg}" style="width: ${classData.value}%"></div>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-medium ${performanceColor.text}">${classData.value}%</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex space-x-1">
+                                <div class="w-4 h-4 rounded-full ${getPerformanceColor(Math.floor(Math.random() * 30) + 70).bg}"></div>
+                                <div class="w-4 h-4 rounded-full ${getPerformanceColor(Math.floor(Math.random() * 30) + 70).bg}"></div>
+                                <div class="w-4 h-4 rounded-full ${performanceColor.bg}"></div>
+                            </div>
+                        </td>
+                    `;
+                    rankingTableBody.appendChild(row);
+                }
+            });
+        }
+
+        // Get performance color based on value
+        function getPerformanceColor(value) {
+            if (value >= 85) {
+                return { bg: 'performance-green', text: 'text-green-600' };
+            } else if (value >= 60) {
+                return { bg: 'performance-yellow', text: 'text-yellow-600' };
+            } else {
+                return { bg: 'performance-red', text: 'text-red-600' };
+            }
+        }
+
+        // Get current week
+        function getCurrentWeek() {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), 0, 1);
+            const diff = now - start;
+            const oneDay = 1000 * 60 * 60 * 24;
+            const day = Math.floor(diff / oneDay);
+            const week = Math.ceil(day / 7);
+            return week;
+        }
+
+        // Traffic light logic
+        function updateTrafficLight(inputId, lightId) {
+            const input = document.getElementById(inputId);
+            const light = document.getElementById(lightId);
+            if (input && light) {
+                input.addEventListener('input', function() {
+                    const value = parseInt(this.value) || 0;
+                    light.classList.remove('green', 'yellow', 'red');
+                    if (value >= 85) {
+                        light.classList.add('green');
+                    } else if (value >= 60) {
+                        light.classList.add('yellow');
+                    } else {
+                        light.classList.add('red');
+                    }
+                });
+            }
+        }
+
+        // Tab switching functionality
+        function setupTabs() {
+            const dashboardTab = document.getElementById('dashboard-tab');
+            const classesTab = document.getElementById('classes-tab');
+            const dashboardContent = document.getElementById('dashboard-content');
+            const classesContent = document.getElementById('classes-content');
+
+            dashboardTab.addEventListener('click', () => {
+                dashboardTab.classList.add('active');
+                classesTab.classList.remove('active');
+                dashboardContent.classList.add('active');
+                classesContent.classList.remove('active');
+            });
+
+            classesTab.addEventListener('click', () => {
+                classesTab.classList.add('active');
+                dashboardTab.classList.remove('active');
+                classesContent.classList.add('active');
+                dashboardContent.classList.remove('active');
+            });
+
+        }
+
+        // Initialize all traffic lights
+        const indicators = [
+            { input: 'tarefasp-input', light: 'tarefasp-light' },
+            { input: 'elefante-input', light: 'elefante-light' },
+            { input: 'redacao-input', light: 'redacao-light' },
+            { input: 'leia-input', light: 'leia-light' },
+            { input: 'speak-input', light: 'speak-light' },
+            { input: 'alura-input', light: 'alura-light' },
+            { input: 'matific-input', light: 'matific-light' },
+            { input: 'khan-input', light: 'khan-light' },
+            { input: 'nota-input', light: 'nota-light' }
+        ];
+        indicators.forEach(indicator => {
+            updateTrafficLight(indicator.input, indicator.light);
+        });
+
+        // Load data on start
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboardData();
+            setupTabs();
+        });
+    </script>
+</body>
+</html>
